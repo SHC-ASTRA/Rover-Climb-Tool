@@ -4,13 +4,16 @@ course_y = [0,0,1,1,0,0];
 wheel_radius = 0.12; % meters
 wheelbase_length = 1.2 - 2*wheel_radius; % meters
 suspension_height = 0.25; % meters
-suspension_design_x = [-wheelbase_length/2, 0, wheelbase_length/2];
-suspension_design_y = [0, suspension_height, 0];
+suspension_design_x = [-wheelbase_length/2, -0.2, 0.2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+suspension_design_y = [0, suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
 
-center_of_mass_x = 0;
-center_of_mass_y = 0.5;
+center_of_mass_x = 0; % Distance from center of rover, negative towards rear wheel, positive towards front
+center_of_mass_y = 0.5; % Height above wheel centerline, not above ground
+
+sim_distance_step = 0.05; % 0.05 is good for coarse sims, 0.01 is good for fine sims
 
 filename = 'testAnimated.gif';
+gif_fps = 30;
 
 front_wheel_pos = wheelbase_length - wheel_radius;
 rear_wheel_pos = front_wheel_pos - wheelbase_length;
@@ -80,9 +83,9 @@ tip_plot.YDataSource = 'tip_y_list';
 intersection = false;
 tip = false;
 
-for iter = 1:1000
+for iter = 1:10000
     
-    center_pos = center_pos + 0.05;
+    center_pos = center_pos + sim_distance_step;
     
     pos_dist = fzero(@(pos_dist) wheelbase_length-calc_wheel_distance(pos_dist, center_pos, course_x, course_y, dirs_x, dirs_y, lengths, adjusted_lengths, adjusted_distances, wheel_radius)...
         ,wheelbase_length);
@@ -140,9 +143,9 @@ for iter = 1:1000
     [imind,cm] = rgb2ind(im,256);
     % Write to the GIF File
     if iter == 1
-        imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',1/30);
+        imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',1/gif_fps);
     else
-        imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',1/30);
+        imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',1/gif_fps);
     end
     
     
