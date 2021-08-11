@@ -1,19 +1,26 @@
-course_x = [0,2,2+1/tand(30),6,6,8];
-course_y = [0,0,1,1,0,0];
+step_height = 0.215;
+slope_angle = 42.5;
 
-wheel_radius = 0.12; % meters
-wheelbase_length = 1.2 - 2*wheel_radius; % meters
-suspension_height = 0.25; % meters
-suspension_design_x = [-wheelbase_length/2, -0.2, 0.2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-suspension_design_y = [0, suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+course_x = [0,2,2+(1+step_height)/tand(slope_angle),3+(1+step_height)/tand(slope_angle),3+(2+step_height)/tand(slope_angle),5+(2+step_height)/tand(slope_angle),5+(2+step_height)/tand(slope_angle),7+(2+step_height)/tand(slope_angle)];
+course_y = [0,0,1+step_height,1+step_height,step_height,step_height,0,0];
 
-center_of_mass_x = 0; % Distance from center of rover, negative towards rear wheel, positive towards front
-center_of_mass_y = 0.5; % Height above wheel centerline, not above ground
+wheel_radius = 0.228/2; % meters
+wheelbase_length = 0.955; % meters
+suspension_height = 0.258; % meters
+suspension_design_x = [-wheelbase_length/2, 0, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+suspension_design_y = [0, suspension_height, 0]; % Height above wheel centerline, not above ground
 
-sim_distance_step = 0.05; % 0.05 is good for coarse sims, 0.01 is good for fine sims
+% suspension_design_x = [-wheelbase_length/2, -wheelbase_length/2, wheelbase_length/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+% suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+
+center_of_mass_x = 0.064; % Distance from center of rover, negative towards rear wheel, positive towards front
+center_of_mass_y = suspension_height+0.072; % Height above wheel centerline, not above ground
+
+sim_distance_step = 0.01; % 0.05 is good for coarse sims, 0.01 is good for fine sims
 
 filename = 'testAnimated.gif';
-gif_fps = 30;
+gif_fps = 60;
+do_plot = true; % Code is much much faster without plotting! Set this to false when trying to optimize design!
 
 front_wheel_pos = wheelbase_length - wheel_radius;
 rear_wheel_pos = front_wheel_pos - wheelbase_length;
@@ -34,6 +41,8 @@ plot(course_x,course_y,"g")
 wheel_f_x_list = [0];
 wheel_f_y_list = [0];
 wheel_f_plot = plot(wheel_f_x_list,wheel_f_y_list,"b");
+xlabel("Horizontal Dimension (m)")
+ylabel("Vertical Dimension (m)")
 
 wheel_f_plot.XDataSource = 'wheel_f_x_list';
 wheel_f_plot.YDataSource = 'wheel_f_y_list';
@@ -135,21 +144,27 @@ for iter = 1:10000
     
     [wheel_f_x_list,wheel_f_y_list] = create_circle(front_wheel_x, front_wheel_y, wheel_radius, 100);
     [wheel_r_x_list,wheel_r_y_list] = create_circle(rear_wheel_x, rear_wheel_y, wheel_radius, 100);
-    refreshdata
-    pause(0.000001)
-    
-    frame = getframe(h);
-    im = frame2im(frame);
-    [imind,cm] = rgb2ind(im,256);
-    % Write to the GIF File
-    if iter == 1
-        imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',1/gif_fps);
-    else
-        imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',1/gif_fps);
+    if do_plot
+        refreshdata
+        pause(0.000001)
+
+
+        frame = getframe(h);
+        im = frame2im(frame);
+        [imind,cm] = rgb2ind(im,256);
+        % Write to the GIF File
+        if iter == 1
+            imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',1/gif_fps);
+        else
+            imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',1/gif_fps);
+        end
     end
     
     
 end
+
+refreshdata
+pause(0.000001)
 
 if intersection
     disp("Suspension collides with terrain!");
