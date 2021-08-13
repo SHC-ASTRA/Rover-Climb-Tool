@@ -44,8 +44,9 @@ options.UseParallel = true;
 
 x = particleswarm(@(x) score_sim(slope_angle=slope_angle, step_height=step_height, wheelbase_length=x(1), suspension_height=x(2), suspension_trap_len=x(3), wheel_radius=wheel_radius, center_of_mass_y=0.072+x(2)), 3, lb, ub, options);
 
+%%
 disp("Wheelbase Length: "+x(1)+" m");
 disp("Suspension Height: "+x(2)+" m");
 disp("Suspension Trapeziod Top Length: "+x(3)+" m");
 
-do_sim(slope_angle=slope_angle, step_height=step_height, wheelbase_length=x(1), suspension_height=x(2), suspension_trap_len=x(3), center_of_mass_y=0.072+x(2), wheel_radius=wheel_radius, do_plot = true)
+do_sim(slope_angle=slope_angle, step_height=step_height, wheelbase_length=x(1), suspension_height=x(2), suspension_trap_len=x(3), center_of_mass_y=0.072+x(2), wheel_radius=wheel_radius, do_plot = true);
