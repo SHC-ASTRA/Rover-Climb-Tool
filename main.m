@@ -23,8 +23,8 @@
 
 wheel_radius = 0.228/2;
 
-slope_angle = 42.5;
-step_height = 0.215;
+slope_angle = 40;
+step_height = 0.5;
 
 min_wheelbase_length = 0.5;
 max_wheelbase_length = 1.2 - 2*wheel_radius;
@@ -34,24 +34,24 @@ min_suspension_horizontal_length = 0;
 max_suspension_horizontal_length = 2;
 min_suspension_horizontal_offset = 0;
 max_suspension_horizontal_offset = 1;
-min_suspension_vertical_length = 0;
-max_suspension_vertical_length = 0.2;
 
-lb = [min_wheelbase_length, min_suspension_height, min_suspension_horizontal_length, min_suspension_vertical_length, min_suspension_vertical_length, min_suspension_horizontal_offset];
-ub = [max_wheelbase_length, max_suspension_height, max_suspension_horizontal_length, max_suspension_vertical_length, max_suspension_vertical_length, max_suspension_horizontal_offset];
+lb = [min_wheelbase_length, min_suspension_height, min_suspension_horizontal_length, min_suspension_horizontal_offset];
+ub = [max_wheelbase_length, max_suspension_height, max_suspension_horizontal_length, max_suspension_horizontal_offset];
 
 options = optimoptions('ga');
 options.Display = 'iter';
 options.PlotFcn = {@gaplotbestf, @(options,state,flag)ga_optim_plot_rover(options,state,flag,wheel_radius)};
 options.UseParallel = true;
 
-x = ga(@(x) score_sim(slope_angle=slope_angle, step_height=step_height, wheelbase_length=x(1), suspension_height=x(2), suspension_trap_len=x(3), suspension_vert_len_f=x(4), suspension_vert_len_r=x(5), suspension_trap_offs=x(6), wheel_radius=wheel_radius, center_of_mass_y=0.072+x(2)),...
-        6, [], [], [], [], lb, ub, [], options);
+x = ga(@(x) score_sim(slope_angle=slope_angle, step_height=step_height, wheelbase_length=x(1), suspension_height=x(2), suspension_trap_len=x(3), suspension_trap_offs=x(4), wheel_radius=wheel_radius, center_of_mass_y=0.072+x(2), center_of_mass_x=0.064 + (x(4)>x(3)/2)*(x(4)-x(3)/2) + (x(4)<-x(3)/2)*(x(4)+x(3)/2)),...
+        4, [], [], [], [], lb, ub, [], options);
 
 %%
 disp("Wheelbase Length: "+x(1)+" m");
 disp("Suspension Height: "+x(2)+" m");
 disp("Suspension Trapeziod Top Length: "+x(3)+" m");
-disp("Suspension Trapeziod Vertical Length: "+x(4)+" m");
+disp("Suspension Trapeziod Top Offset: "+x(4)+" m");
+disp("Center of mass offset: "+((x(4)>x(3)/2)*(x(4)-x(3)/2) + (x(4)<-x(3)/2)*(x(4)+x(3)/2))+" m");
 
-do_sim(slope_angle=slope_angle, step_height=step_height, wheelbase_length=x(1), suspension_height=x(2), suspension_trap_len=x(3), suspension_vert_len_f=x(4), suspension_vert_len_r=x(5), suspension_trap_offs=x(6), center_of_mass_y=0.072+x(2), wheel_radius=wheel_radius, do_plot = true);
+
+do_sim(sim_distance_step=0.01, slope_angle=slope_angle, step_height=step_height, wheelbase_length=x(1), suspension_height=x(2), suspension_trap_len=x(3), suspension_trap_offs=x(4), wheel_radius=wheel_radius, center_of_mass_y=0.072+x(2), center_of_mass_x=0.064 + (x(4)>x(3)/2)*(x(4)-x(3)/2) + (x(4)<-x(3)/2)*(x(4)+x(3)/2), do_plot = true);

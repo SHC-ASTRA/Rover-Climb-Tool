@@ -1,4 +1,4 @@
-function [intersection,tip,intersection_Xs,intersection_Ys,tip_x_list,tip_y_list,suspension_length,suspension_height,wheel_radius] = do_sim(varargin)
+function [intersection,tip,intersection_Xs,intersection_Ys,tip_severity,suspension_length,suspension_height,wheel_radius] = do_sim(varargin)
 default_step_height = 1;
 default_slope_angle = 30;
 
@@ -99,6 +99,7 @@ com_y_list = [0];
 
 tip_x_list = [NaN];
 tip_y_list = [NaN];
+tip_severity = [0];
 
 if do_final_plot || do_plot
     h = figure();
@@ -171,6 +172,11 @@ for iter = 1:10000
         tip_x_list(end+1) = com_x;
         tip_y_list(end+1) = com_y;
         tip = true;
+        if com_x>front_contact_x
+            tip_severity(end+1) = abs(com_x-front_contact_x);
+        else
+            tip_severity(end+1) = abs(com_x-rear_contact_x);
+        end
     end
     
     [suspension_x_list,suspension_y_list] = position_relative_to_wheels(front_wheel_x, front_wheel_y, rear_wheel_x, rear_wheel_y, suspension_design_x, suspension_design_y);

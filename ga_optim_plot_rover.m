@@ -15,12 +15,10 @@ if flag == 'iter'
         wheelbase_length = x(1);
         suspension_height = x(2);
         suspension_trap_len = x(3);
-        suspension_vert_len_f=x(4);
-        suspension_vert_len_r=x(5);
-        suspension_trap_offs=x(6);
+        suspension_trap_offs=x(4);
         
-        suspension_design_x = [-wheelbase_length/2, -wheelbase_length/2, -suspension_trap_len/2+suspension_trap_offs, suspension_trap_len/2+suspension_trap_offs, wheelbase_length/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-        suspension_design_y = [0,suspension_vert_len_r,suspension_height, suspension_height, suspension_vert_len_f, 0]; % Height above wheel centerline, not above ground
+        suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2+suspension_trap_offs, suspension_trap_len/2+suspension_trap_offs, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+        suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
         
         front_wheel_x = wheelbase_length/2;
         front_wheel_y = wheel_radius;
@@ -42,12 +40,10 @@ if flag == 'iter'
     wheelbase_length = x(1);
     suspension_height = x(2);
     suspension_trap_len = x(3);
-    suspension_vert_len_f=x(4);
-    suspension_vert_len_r=x(5);
-    suspension_trap_offs=x(6);
+    suspension_trap_offs=x(4);
     
-    suspension_design_x = [-wheelbase_length/2, -wheelbase_length/2, -suspension_trap_len/2+suspension_trap_offs, suspension_trap_len/2+suspension_trap_offs, wheelbase_length/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-    suspension_design_y = [0,suspension_vert_len_r,suspension_height, suspension_height, suspension_vert_len_f, 0]; % Height above wheel centerline, not above ground
+    suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2+suspension_trap_offs, suspension_trap_len/2+suspension_trap_offs, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+    suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
 
     front_wheel_x = wheelbase_length/2;
     front_wheel_y = wheel_radius;
