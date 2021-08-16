@@ -1,4 +1,4 @@
-function stop = ga_optim_plot_rover(optimValues,state,flag,wheel_radius)
+function stop = psw_optim_plot_rover(optimValues,state,wheel_radius)
 
 
 x = optimValues.bestx;
@@ -30,7 +30,9 @@ plot(suspension_x_list,suspension_y_list,"c");
 xl = xlim;
 yl = ylim;
 
-for x = optimValues.swarm
+pop_size = size(optimValues.swarm);
+for i = 1:pop_size
+    x = optimValues.swarm(i,:);
     wheelbase_length = x(1);
     suspension_height = x(2);
     suspension_trap_len = x(3);

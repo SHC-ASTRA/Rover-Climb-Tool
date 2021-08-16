@@ -5,7 +5,8 @@ default_slope_angle = 30;
 default_wheel_radius = 0.228/2; % meters
 default_wheelbase_length = 0.955; % meters
 default_suspension_height = 0.258; % meters
-default_suspension_trap_len = 0.5;
+default_suspension_trap_len = 0.0;
+default_suspension_vert_len = 0.0;
 % suspension_design_x = [-wheelbase_length/2, 0, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
 % suspension_design_y = [0, suspension_height, 0]; % Height above wheel centerline, not above ground
 
@@ -26,6 +27,9 @@ addParameter(p,"wheel_radius",default_wheel_radius)
 addParameter(p,"wheelbase_length",default_wheelbase_length)
 addParameter(p,"suspension_height",default_suspension_height)
 addParameter(p,"suspension_trap_len",default_suspension_trap_len)
+addParameter(p,"suspension_trap_offs",0)
+addParameter(p,"suspension_vert_len_f",default_suspension_vert_len)
+addParameter(p,"suspension_vert_len_r",default_suspension_vert_len)
 addParameter(p,"center_of_mass_x",default_center_of_mass_x)
 addParameter(p,"center_of_mass_y",default_center_of_mass_y)
 addParameter(p,"sim_distance_step",default_sim_distance_step)
@@ -41,6 +45,9 @@ wheel_radius = p.Results.wheel_radius;
 wheelbase_length = p.Results.wheelbase_length;
 suspension_height = p.Results.suspension_height;
 suspension_trap_len = p.Results.suspension_trap_len;
+suspension_trap_offs = p.Results.suspension_trap_offs;
+suspension_vert_len_f = p.Results.suspension_vert_len_f;
+suspension_vert_len_r = p.Results.suspension_vert_len_r;
 center_of_mass_x = p.Results.center_of_mass_x;
 center_of_mass_y = p.Results.center_of_mass_y;
 sim_distance_step = p.Results.sim_distance_step;
@@ -52,8 +59,10 @@ do_final_plot = p.Results.do_final_plot;
 course_x = [0,2,2+(1+step_height)/tand(slope_angle),3+(1+step_height)/tand(slope_angle),3+(2+step_height)/tand(slope_angle),5+(2+step_height)/tand(slope_angle),5+(2+step_height)/tand(slope_angle),7+(2+step_height)/tand(slope_angle)];
 course_y = [0,0,1+step_height,1+step_height,step_height,step_height,0,0];
 
-suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2, suspension_trap_len/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+
+suspension_design_x = [-wheelbase_length/2, -wheelbase_length/2, -suspension_trap_len/2+suspension_trap_offs, suspension_trap_len/2+suspension_trap_offs, wheelbase_length/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+suspension_design_y = [0,suspension_vert_len_r,suspension_height, suspension_height, suspension_vert_len_f, 0]; % Height above wheel centerline, not above ground
+
 
 d = diff([suspension_design_x(:) suspension_design_y(:)]);
 suspension_length = sum(sqrt(sum(d.^2,2)));
