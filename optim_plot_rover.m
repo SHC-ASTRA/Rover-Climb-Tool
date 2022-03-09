@@ -4,10 +4,10 @@ function stop = optim_plot_rover(optimValues,state,wheel_radius)
 x = optimValues.bestx;
 wheelbase_length = x(1);
 suspension_height = x(2);
-suspension_trap_len = x(3);
+%wheel_radius = x(3);
 
-suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2, suspension_trap_len/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+suspension_design_x = wheelbase_length*linspace(-0.5,0.5,12);% Distance from center of rover, negative towards rear wheel, positive towards front
+suspension_design_y = suspension_height*[0,x(3:12),0]; % Height above wheel centerline, not above ground
 
 front_wheel_x = wheelbase_length/2;
 front_wheel_y = wheel_radius;
@@ -23,19 +23,20 @@ plot([-1.2/2,-1.2/2,1.2/2,1.2/2],[1,0,0,1],"k");
 title("Best Design")
 hold on
 axis equal
-plot(wheel_f_x_list,wheel_f_y_list,"b");
-plot(wheel_r_x_list,wheel_r_y_list,"b");
-plot(suspension_x_list,suspension_y_list,"c");
+plot(wheel_f_x_list,wheel_f_y_list,'Color',[0, 0, 0.1, 1],'LineWidth',3);
+plot(wheel_r_x_list,wheel_r_y_list,'Color',[0, 0, 0.1, 1],'LineWidth',3);
+plot(suspension_x_list,suspension_y_list,'Color',[0, 0.1, 0.1, 1],'LineWidth',3);
 xl = xlim;
 yl = ylim;
 
-for x = optimValues.swarm
+
+for x = optimValues.swarm'
     wheelbase_length = x(1);
     suspension_height = x(2);
-    suspension_trap_len = x(3);
-
-    suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2, suspension_trap_len/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-    suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+    %wheel_radius = x(3);
+    
+    suspension_design_x = wheelbase_length*linspace(-0.5,0.5,12);% Distance from center of rover, negative towards rear wheel, positive towards front
+    suspension_design_y = suspension_height*[0,x(3:12)',0]; % Height above wheel centerline, not above ground
 
     front_wheel_x = wheelbase_length/2;
     front_wheel_y = wheel_radius;
@@ -47,10 +48,33 @@ for x = optimValues.swarm
     [wheel_r_x_list,wheel_r_y_list] = create_circle(rear_wheel_x, rear_wheel_y, wheel_radius, 100);
     [suspension_x_list,suspension_y_list] = position_relative_to_wheels(front_wheel_x, front_wheel_y, rear_wheel_x, rear_wheel_y, suspension_design_x, suspension_design_y);
 
-    plot(wheel_f_x_list,wheel_f_y_list,'Color',[0, 0, 1, 0.2]);
-    plot(wheel_r_x_list,wheel_r_y_list,'Color',[0, 0, 1, 0.2]);
-    plot(suspension_x_list,suspension_y_list,'Color',[0, 1, 1, 0.2]);
+    plot(wheel_f_x_list,wheel_f_y_list,'Color',[0, 0, 1, 0.1]);
+    plot(wheel_r_x_list,wheel_r_y_list,'Color',[0, 0, 1, 0.1]);
+    plot(suspension_x_list,suspension_y_list,'Color',[0, 1, 1, 0.1]);
 end
+
+x = optimValues.bestx;
+wheelbase_length = x(1);
+suspension_height = x(2);
+%wheel_radius = x(3);
+
+suspension_design_x = wheelbase_length*linspace(-0.5,0.5,12);% Distance from center of rover, negative towards rear wheel, positive towards front
+suspension_design_y = suspension_height*[0,x(3:12),0]; % Height above wheel centerline, not above ground
+
+front_wheel_x = wheelbase_length/2;
+front_wheel_y = wheel_radius;
+
+rear_wheel_x = -wheelbase_length/2;
+rear_wheel_y = wheel_radius;
+
+[wheel_f_x_list,wheel_f_y_list] = create_circle(front_wheel_x, front_wheel_y, wheel_radius, 100);
+[wheel_r_x_list,wheel_r_y_list] = create_circle(rear_wheel_x, rear_wheel_y, wheel_radius, 100);
+[suspension_x_list,suspension_y_list] = position_relative_to_wheels(front_wheel_x, front_wheel_y, rear_wheel_x, rear_wheel_y, suspension_design_x, suspension_design_y);
+
+
+plot(wheel_f_x_list,wheel_f_y_list,'Color',[0, 0, 0.1, 1],'LineWidth',3);
+plot(wheel_r_x_list,wheel_r_y_list,'Color',[0, 0, 0.1, 1],'LineWidth',3);
+plot(suspension_x_list,suspension_y_list,'Color',[0, 0.1, 0.1, 1],'LineWidth',3);
 
 xlim(xl)
 ylim(yl)

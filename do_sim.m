@@ -1,16 +1,18 @@
-function [intersection,tip,intersection_Xs,intersection_Ys,tip_x_list,tip_y_list,suspension_length,suspension_height,wheel_radius] = do_sim(varargin)
+function [intersection,tip,intersection_Xs,intersection_Ys,tip_x_list,tip_y_list,suspension_length,suspension_height,wheel_radius,wheelbase_length,suspension_design_x,suspension_design_y] = do_sim(varargin)
 default_step_height = 1;
+default_spike_height = 1;
 default_slope_angle = 30;
 
-default_wheel_radius = 0.228/2; % meters
+default_wheel_radius = 0.21/2; % meters
 default_wheelbase_length = 0.955; % meters
 default_suspension_height = 0.258; % meters
 default_suspension_trap_len = 0.5;
-% suspension_design_x = [-wheelbase_length/2, 0, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-% suspension_design_y = [0, suspension_height, 0]; % Height above wheel centerline, not above ground
+default_suspension_design_x = []; % Distance from center of rover, negative towards rear wheel, positive towards front
+default_suspension_design_y = []; % Height above wheel centerline, not above ground
 
 default_center_of_mass_x = 0.064; % Distance from center of rover, negative towards rear wheel, positive towards front
 default_center_of_mass_y = default_suspension_height+0.072; % Height above wheel centerline, not above ground
+default_tip_safety_factor = 0; 
 
 default_sim_distance_step = 0.01; % 0.05 is good for coarse sims, 0.01 is good for fine sims
 
@@ -21,13 +23,17 @@ default_do_final_plot = false;
 
 p = inputParser;
 addParameter(p,"step_height",default_step_height)
+addParameter(p,"spike_height",default_spike_height)
 addParameter(p,"slope_angle",default_slope_angle)
 addParameter(p,"wheel_radius",default_wheel_radius)
 addParameter(p,"wheelbase_length",default_wheelbase_length)
 addParameter(p,"suspension_height",default_suspension_height)
 addParameter(p,"suspension_trap_len",default_suspension_trap_len)
+addParameter(p,"suspension_design_x",default_suspension_design_x)
+addParameter(p,"suspension_design_y",default_suspension_design_y)
 addParameter(p,"center_of_mass_x",default_center_of_mass_x)
 addParameter(p,"center_of_mass_y",default_center_of_mass_y)
+addParameter(p,"tip_safety_factor",default_tip_safety_factor)
 addParameter(p,"sim_distance_step",default_sim_distance_step)
 addParameter(p,"filename",default_filename)
 addParameter(p,"gif_fps",default_gif_fps)
@@ -36,12 +42,16 @@ addParameter(p,"do_final_plot",default_do_final_plot)
 
 parse(p,varargin{:})
 step_height = p.Results.step_height;
+spike_height = p.Results.spike_height;
 slope_angle = p.Results.slope_angle;
 wheel_radius = p.Results.wheel_radius;
 wheelbase_length = p.Results.wheelbase_length;
 suspension_height = p.Results.suspension_height;
 suspension_trap_len = p.Results.suspension_trap_len;
+suspension_design_x = p.Results.suspension_design_x;
+suspension_design_y = p.Results.suspension_design_y;
 center_of_mass_x = p.Results.center_of_mass_x;
+tip_safety_factor = p.Results.tip_safety_factor;
 center_of_mass_y = p.Results.center_of_mass_y;
 sim_distance_step = p.Results.sim_distance_step;
 filename = p.Results.filename;
@@ -49,14 +59,23 @@ gif_fps = p.Results.gif_fps;
 do_plot = p.Results.do_plot;
 do_final_plot = p.Results.do_final_plot;
 
-course_x = [0,2,2+(1+step_height)/tand(slope_angle),3+(1+step_height)/tand(slope_angle),3+(2+step_height)/tand(slope_angle),5+(2+step_height)/tand(slope_angle),5+(2+step_height)/tand(slope_angle),7+(2+step_height)/tand(slope_angle)];
-course_y = [0,0,1+step_height,1+step_height,step_height,step_height,0,0];
+upslope_x = (1+step_height)/tand(slope_angle);
+downslope_x = (1)/tand(slope_angle);
+spike_x = (spike_height)/tand(slope_angle);
 
-suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2, suspension_trap_len/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
-suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+course_dx = [0,2,0,2,0,2,spike_x,spike_x,2,upslope_x,2,upslope_x,2];
+course_x = cumsum(course_dx);
+course_y = [0,0,step_height,step_height,0,0,spike_height,0,0,1,1,0,0];
+
+if isempty(suspension_design_x) || isempty(suspension_design_y)
+    suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2, suspension_trap_len/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+    suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+end
 
 d = diff([suspension_design_x(:) suspension_design_y(:)]);
 suspension_length = sum(sqrt(sum(d.^2,2)));
+
+tip_margin = wheelbase_length*tip_safety_factor;
 
 front_wheel_pos = wheelbase_length - wheel_radius;
 rear_wheel_pos = front_wheel_pos - wheelbase_length;
@@ -66,6 +85,8 @@ center_pos = (front_wheel_pos+rear_wheel_pos)/2;
 [dirs_x, dirs_y, lengths] = calc_dirs_and_lengths(course_x, course_y);
 adjusted_lengths = calc_adjusted_lengths(course_x, course_y, dirs_x, dirs_y, lengths, wheel_radius);
 adjusted_distances = cumsum(adjusted_lengths);
+
+
 
 
 segment_idx = 1;
@@ -158,7 +179,7 @@ for iter = 1:10000
     com_x_list = [com_x_list, NaN, com_x, com_x];
     com_y_list = [com_y_list, NaN, com_y, min(front_contact_y,rear_contact_y)-0.1];
     
-    if com_x>front_contact_x || com_x<rear_contact_x
+    if com_x+tip_margin>front_contact_x || com_x-tip_margin<rear_contact_x
         tip_x_list(end+1) = com_x;
         tip_y_list(end+1) = com_y;
         tip = true;
