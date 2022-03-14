@@ -22,11 +22,14 @@ default_do_plot = false; % Code is much much faster without plotting! Set this t
 default_do_final_plot = false;
 
 p = inputParser;
+p.KeepUnmatched = true;
 addParameter(p,"step_height",default_step_height)
 addParameter(p,"spike_height",default_spike_height)
 addParameter(p,"slope_angle",default_slope_angle)
+addParameter(p,"spike_angle",default_slope_angle)
 addParameter(p,"wheel_radius",default_wheel_radius)
 addParameter(p,"wheelbase_length",default_wheelbase_length)
+addParameter(p,"base1_len",default_wheelbase_length)
 addParameter(p,"suspension_height",default_suspension_height)
 addParameter(p,"suspension_trap_len",default_suspension_trap_len)
 addParameter(p,"suspension_design_x",default_suspension_design_x)
@@ -44,10 +47,12 @@ parse(p,varargin{:})
 step_height = p.Results.step_height;
 spike_height = p.Results.spike_height;
 slope_angle = p.Results.slope_angle;
+spike_angle = p.Results.spike_angle;
 wheel_radius = p.Results.wheel_radius;
 wheelbase_length = p.Results.wheelbase_length;
 suspension_height = p.Results.suspension_height;
 suspension_trap_len = p.Results.suspension_trap_len;
+base1_len = p.Results.base1_len;
 suspension_design_x = p.Results.suspension_design_x;
 suspension_design_y = p.Results.suspension_design_y;
 center_of_mass_x = p.Results.center_of_mass_x;
@@ -59,16 +64,15 @@ gif_fps = p.Results.gif_fps;
 do_plot = p.Results.do_plot;
 do_final_plot = p.Results.do_final_plot;
 
-upslope_x = (1+step_height)/tand(slope_angle);
-downslope_x = (1)/tand(slope_angle);
-spike_x = (spike_height)/tand(slope_angle);
+slope_x = (1)/tand(slope_angle);
+spike_x = (spike_height)/tand(spike_angle);
 
-course_dx = [0,2,0,2,0,2,spike_x,spike_x,2,upslope_x,2,upslope_x,2];
+course_dx = [0,2,0,2,0,2,spike_x,spike_x,2,slope_x,2,slope_x,2];
 course_x = cumsum(course_dx);
 course_y = [0,0,step_height,step_height,0,0,spike_height,0,0,1,1,0,0];
 
 if isempty(suspension_design_x) || isempty(suspension_design_y)
-    suspension_design_x = [-wheelbase_length/2, -suspension_trap_len/2, suspension_trap_len/2, wheelbase_length/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+    suspension_design_x = [-base1_len/2, -suspension_trap_len/2, suspension_trap_len/2, base1_len/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
     suspension_design_y = [0,suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
 end
 
@@ -112,6 +116,9 @@ com_y_list = [0];
 tip_x_list = [NaN];
 tip_y_list = [NaN];
 
+pivot_x = 0;
+pivot_y = 0;
+
 if do_final_plot || do_plot
     h = figure();
     hold on
@@ -127,6 +134,10 @@ if do_final_plot || do_plot
     wheel_r_plot = plot(wheel_r_x_list,wheel_r_y_list,"b");
     wheel_r_plot.XDataSource = 'wheel_r_x_list';
     wheel_r_plot.YDataSource = 'wheel_r_y_list';
+
+    pivot_plot = plot(0,0,"ko");
+    pivot_plot.XDataSource = 'pivot_x';
+    pivot_plot.YDataSource = 'pivot_y';
     
     suspension_plot = plot(suspension_x_list,suspension_y_list,"c");
     suspension_plot.XDataSource = 'suspension_x_list';
@@ -174,6 +185,7 @@ for iter = 1:10000
     contact_pts_y = [front_contact_y, rear_contact_y];
     
     [com_x,com_y] = position_relative_to_wheels(front_wheel_x, front_wheel_y, rear_wheel_x, rear_wheel_y, center_of_mass_x, center_of_mass_y);
+    [pivot_x,pivot_y] = position_relative_to_wheels(front_wheel_x, front_wheel_y, rear_wheel_x, rear_wheel_y, 0, 0.05+suspension_height);
     
     [com_x_list,com_y_list] = create_circle(com_x, com_y, 0.05);
     com_x_list = [com_x_list, NaN, com_x, com_x];
@@ -205,6 +217,9 @@ for iter = 1:10000
     [wheel_f_x_list,wheel_f_y_list] = create_circle(front_wheel_x, front_wheel_y, wheel_radius, 100);
     [wheel_r_x_list,wheel_r_y_list] = create_circle(rear_wheel_x, rear_wheel_y, wheel_radius, 100);
     if do_plot
+
+        xlim([com_x-1,com_x+1])
+        ylim([com_y-1.1,com_y+0.9])
         refreshdata(h,'caller')
         pause(0.000001)
         
