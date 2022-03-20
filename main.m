@@ -1,7 +1,7 @@
 wheel_radius = 0.25/2;
 
-slope_angle = 42;
-step_height = 0.4;
+slope_angle = 42.1;
+step_height = 0.351;
 spike_angle = 30;
 spike_height = 0.2;
 
@@ -19,6 +19,7 @@ options = optimoptions('particleswarm');
 options.Display = 'iter';
 options.PlotFcn = {@pswplotbestf, @(optimValues,state)optim_plot_rover(optimValues,state,wheel_radius)};
 options.UseParallel = true;
+options.HybridFcn = "fmincon";
 
 %%
 
@@ -26,12 +27,28 @@ x = particleswarm(@(x) score_sim(slope_angle=slope_angle, step_height=step_heigh
 
 %%
 disp("Wheelbase Length: "+x(1)+" m");
+disp("Wheel Diameter: "+(wheel_radius*2)+" m");
 disp("Trapezoid Base One Length: "+x(4)+" m");
 disp("Trapezoid Base Two Length: "+x(3)+" m");
 disp("Suspension Height: "+x(2)+" m");
 disp("Total Height: "+(x(2)+wheel_radius)+" m");
 
-score_sim(slope_angle=slope_angle, step_height=step_height, spike_height=spike_height, spike_angle=spike_angle, wheelbase_length=x(1), base1_len=x(4), suspension_height=x(2), suspension_trap_len=x(3), wheel_radius=wheel_radius, center_of_mass_y=0.072+0.05+x(2), do_plot = true)
+score1 = score_sim(slope_angle=slope_angle, step_height=step_height, spike_height=spike_height, spike_angle=spike_angle, wheelbase_length=x(1), base1_len=x(4), suspension_height=x(2), suspension_trap_len=x(3), wheel_radius=wheel_radius, center_of_mass_y=0.072+0.05+x(2), do_plot = true)
+
+disp("testing rounded version")
+
+x = round(x,3,'significant');
+slope_angle = 42;
+step_height = 0.35;
+
+disp("Wheelbase Length: "+x(1)+" m");
+disp("Wheel Diameter: "+(wheel_radius*2)+" m");
+disp("Trapezoid Base One Length: "+x(4)+" m");
+disp("Trapezoid Base Two Length: "+x(3)+" m");
+disp("Suspension Height: "+x(2)+" m");
+disp("Total Height: "+(x(2)+wheel_radius)+" m");
+
+score2 = score_sim(slope_angle=slope_angle, step_height=step_height, spike_height=spike_height, spike_angle=spike_angle, wheelbase_length=x(1), base1_len=x(4), suspension_height=x(2), suspension_trap_len=x(3), wheel_radius=wheel_radius, center_of_mass_y=0.072+0.05+x(2), do_plot = true)
 
 %% Reference
 
