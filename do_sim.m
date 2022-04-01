@@ -24,6 +24,8 @@ default_do_final_plot = false;
 p = inputParser;
 p.KeepUnmatched = true;
 addParameter(p,"step_height",default_step_height)
+addParameter(p,"step_up_height",NaN)
+addParameter(p,"step_down_height",NaN)
 addParameter(p,"spike_height",default_spike_height)
 addParameter(p,"slope_angle",default_slope_angle)
 addParameter(p,"spike_angle",default_slope_angle)
@@ -45,6 +47,8 @@ addParameter(p,"do_final_plot",default_do_final_plot)
 
 parse(p,varargin{:})
 step_height = p.Results.step_height;
+step_up_height = p.Results.step_up_height;
+step_down_height = p.Results.step_down_height;
 spike_height = p.Results.spike_height;
 slope_angle = p.Results.slope_angle;
 spike_angle = p.Results.spike_angle;
@@ -64,12 +68,21 @@ gif_fps = p.Results.gif_fps;
 do_plot = p.Results.do_plot;
 do_final_plot = p.Results.do_final_plot;
 
+if isnan(step_up_height)
+    step_up_height = step_height;
+end
+if isnan(step_down_height)
+    step_down_height = step_height;
+end
+
 slope_x = (1)/tand(slope_angle);
 spike_x = (spike_height)/tand(spike_angle);
+transition_x = (abs(step_up_height-step_down_height))/tand(20);
+transition_x = max(transition_x,0.1);
 
-course_dx = [0,2,0,2,0,2,spike_x,spike_x,2,slope_x,2,slope_x,2];
+course_dx = [0,2,0,1,transition_x,1,0,2,spike_x,0.5,spike_x,2,slope_x,2,slope_x,2];
 course_x = cumsum(course_dx);
-course_y = [0,0,step_height,step_height,0,0,spike_height,0,0,1,1,0,0];
+course_y = [0,0,step_up_height,step_up_height,step_down_height,step_down_height,0,0,spike_height,spike_height,0,0,1,1,0,0];
 
 if isempty(suspension_design_x) || isempty(suspension_design_y)
     suspension_design_x = [-base1_len/2, -suspension_trap_len/2, suspension_trap_len/2, base1_len/2]; % Distance from center of rover, negative towards rear wheel, positive towards front

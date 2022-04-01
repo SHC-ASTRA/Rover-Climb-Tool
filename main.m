@@ -50,6 +50,37 @@ disp("Total Height: "+(x(2)+wheel_radius)+" m");
 
 score2 = score_sim(slope_angle=slope_angle, step_height=step_height, spike_height=spike_height, spike_angle=spike_angle, wheelbase_length=x(1), base1_len=x(4), suspension_height=x(2), suspension_trap_len=x(3), wheel_radius=wheel_radius, center_of_mass_y=0.072+0.05+x(2), do_plot = true)
 
+
+%%
+slope_angle = 42;
+step_up_height = 0.278;
+step_down_height = 0.35;
+spike_height = 0.5;
+spike_angle = 65;
+
+x = [0.853 0.154 0.471 0.623];
+
+wheelbase_length = x(1);
+suspension_height = x(2);
+suspension_trap_len = x(3);
+base1_len = x(4);
+
+suspension_design_x = [-base1_len/2, -base1_len/2, -0.056, suspension_trap_len/2, base1_len/2]; % Distance from center of rover, negative towards rear wheel, positive towards front
+suspension_design_y = [0, 0.090, suspension_height, suspension_height, 0]; % Height above wheel centerline, not above ground
+
+disp("Wheelbase Length: "+x(1)+" m");
+disp("Wheel Diameter: "+(wheel_radius*2)+" m");
+disp("Trapezoid Base One Length: "+x(4)+" m");
+disp("Trapezoid Base Two Length: "+x(3)+" m");
+disp("Suspension Height: "+x(2)+" m");
+disp("Total Height: "+(x(2)+wheel_radius)+" m");
+
+score1 = score_sim(slope_angle=slope_angle, step_up_height=step_up_height, step_down_height=step_down_height, spike_height=spike_height, spike_angle=spike_angle,...
+    wheelbase_length=wheelbase_length, wheel_radius=wheel_radius, suspension_height=suspension_height, center_of_mass_y=0.072+0.05+suspension_height,...
+    suspension_design_x=suspension_design_x, suspension_design_y=suspension_design_y,...
+    do_plot = true)
+
+
 %% Reference
 
 % slope_angle = 42;
